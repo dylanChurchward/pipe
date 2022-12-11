@@ -25,3 +25,6 @@ def lambda_handler(event, context):
         rotated_image1 = Grayscaled_image1.rotate(float(event.get('rotate')))
         rotated_image1.save('/tmp/' + 'finished_' + my_bucket_object.key)
         s3.upload_file('/tmp/' + 'finished_' + my_bucket_object.key, 'image.save.bucket.tcss462562-2', 'finished_' + my_bucket_object.key)
+        
+    response = {"status": "success"}
+    return response 
