@@ -1,35 +1,34 @@
+import boto3
 import time
 import math
-import requests
+
 
 # number of times you want to call the FaaS 
-function_calls = 10
+function_calls = 1000
 
 # store the runtime of each FaaS function call 
 runtimes = []
 
 # the json you want to send to your FaaS 
-json = '{"name": "bug.jpg","radius": 5,"width": 500,"height": 700,"enhanced": 3,"rotate": 180}'
+json = '{"bucketname": "image.bucket.tcss462562-2","rotate": "180","width": "500","height": "700","enhanced": "3","radius": "5"}'
 
 # call the FaaS function
 def call_function():
-    url = "https://image-processing-ikxu3nztsq-ue.a.run.app"
-    payload = json
-    headers = {
-        'Content-Type': 'application/json'
-    }
-    response = requests.request("POST", url, headers=headers, data=payload)
-    #response.elapsed.total_seconds()
+    lambda_client = boto3.client('lambda')
+    lambda_client.invoke(FunctionName='image-pipeline', 
+                         InvocationType='RequestResponse',
+                         Payload=json)
     
 # call the FaaS once before collecting runtime data, so the cold start doesn't skew the data 
 call_function()                         
 
+# call function function_calls times, collect the runtime data
 for x in range(0, function_calls, 1):
     start = time.time()
     call_function()
     finish = time.time()
     runtimes.append(finish - start)
-    print(runtimes[x]) # make sure its working 
+    print("call number:", x, runtimes[x]) # make sure its working 
 
 # find average runtime 
 total = 0
@@ -40,7 +39,7 @@ average_runtime = total / len(runtimes)
 
 print("average runtime:", average_runtime)
 
-# find the standard deviation of runtime 
+# find the standard deviation of runtimes
 sum_of_squares = 0
 for x in runtimes:
     sum_of_squares = sum_of_squares + pow(abs(x - average_runtime), 2)
